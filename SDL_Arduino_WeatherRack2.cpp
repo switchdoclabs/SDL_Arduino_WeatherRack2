@@ -3,17 +3,17 @@
 //   SDL_Arduino_WeatherRack2.cpp
 //   Version 1.2
 //   SwitchDoc Labs   September 2020
-//   Supports WeatherRack2 and Indoor T/H Sensor from SwitchDoc Labs
+//   Supports WeatherSense WeatherRack2 and Indoor T/H Sensor from SwitchDoc Labs
 //
 /*
   SDL_Arduino_WeatherRack2
   September 2020
   Added Arduino Support
 
-  Modified by SwitchDoc Labs to support WeatherRack2 and SDL Indoor TH sensor.
+  Modified by SwitchDoc Labs to support WeatherSense WeatherRack2 and SDL Indoor TH sensor.
 
 
-  Based on Andrew's sketch for capturing data from F007th Thermo-Hygrometer and with the addition of a checksum check.
+  Based on Andrew's sketch for capturing data from F016TH Thermo-Hygrometer and with the addition of a checksum check.
 
 
   Inspired by the many weather station hackers who have gone before,
@@ -25,10 +25,10 @@
   is the basis of this code)
   https://github.com/robwlakes/ArduinoWeatherOS
 
-  The work of 3zero8 capturing and analysing the F007th data
+  The work of 3zero8 capturing and analysing the F016TH data
   http://forum.arduino.cc/index.php?topic=214436.0
 
-  The work of Volgy capturing and analysing the F007th data
+  The work of Volgy capturing and analysing the F016TH data
   https://github.com/volgy/gr-ambient
 
   Marco Schwartz for showing how to send sensor data to websites
@@ -44,10 +44,10 @@
   Additional work by Ron Lewis on reverse engineering the checksum
 
   What this code does:
-  Captures F007th (and now TF0300) Thermo-Hygrometer data packets by;
+  Captures F016TH (and now TF0300) Thermo-Hygrometer data packets by;
   Identifying a header of at least 10 rising edges (manchester encoding binary 1s)
   Synchs the data correctly within byte boundaries
-  Distinguishes between F007th data packets and other 434Mhz signals with equivalent header by checking value of sensor ID byte
+  Distinguishes between F016TH data packets and other 434Mhz signals with equivalent header by checking value of sensor ID byte
   Correctly identifies positive and negative temperature values to 1 decimal place for up to 8 channels
   Correctly identifies humidity values for up to 8 channels
   Error checks data by rejecting;
@@ -59,7 +59,7 @@
 
 
 
-  F007th Thermo-Hygrometer
+  F016TH Thermo-Hygrometer
   Sample Data:
   0        1        2        3        4        5        6        7
   FD       45       4F       04       4B       0B       52       0
@@ -67,13 +67,13 @@
   11111101 01000101 01001111 00000100 01001011 00001011 01010010 0000
   hhhhhhhh SSSSSSSS NRRRRRRR bCCCTTTT TTTTTTTT HHHHHHHH CCCCCCCC ????
 
-  Channel 1 F007th sensor displaying 21.1 Centigrade and 11% RH
+  Channel 1 F016TH sensor displaying 21.1 Centigrade and 11% RH
 
   hhhhhhhh = header with final 01 before data packet starts (note using this sketch the header 01 is omitted when the binary is displayed)
-  SSSSSSSS = sensor ID, F007th = Ox45
+  SSSSSSSS = sensor ID, F016TH = Ox45
   NRRRRRRR = Rolling Code Byte? Resets each time the battery is changed
   b = battery indicator?
-  CCC = Channel identifier, channels 1 to 8 can be selected on the F007th unit using dipswitches. Channel 1 => 000, Channel 2 => 001, Channel 3 => 010 etc.
+  CCC = Channel identifier, channels 1 to 8 can be selected on the F016TH unit using dipswitches. Channel 1 => 000, Channel 2 => 001, Channel 3 => 010 etc.
   TTTT TTTTTTTT = 12 bit temperature data.
   To obtain F: convert binary to decimal, take away 400 and divide by 10 e.g. (using example above) 010001001011 => 1099
   (1099-400)/10= 69.9F
@@ -529,7 +529,7 @@ int SDL_Arduino_WeatherRack2::add(byte bitData)
     float tempc;
 
 
-    // Identify sensor by looking for sensorID in byte 1 (F007th  Thermo-Hygrometer = 0x45)
+    // Identify sensor by looking for sensorID in byte 1 (F016TH  Thermo-Hygrometer = 0x45)
     dataType = manchester[1];
     int device = manchester[2];
 
@@ -546,13 +546,13 @@ int SDL_Arduino_WeatherRack2::add(byte bitData)
 
 
 
-    // Checks sensor is a F007th with a valid humidity reading equal or less than 100
+    // Checks sensor is a F016TH with a valid humidity reading equal or less than 100
     if ((dataType == 0x45) && (Newhum <= 100))
     {
 #ifdef WR2DEBUG
-      Serial.print("007CalChecksum=");
+      Serial.print("F016THCalChecksum=");
       Serial.println(myFT007CalculatedChecksum, HEX);
-      Serial.print("myFT007Checksum=");
+      Serial.print("myF016THChecksum=");
       Serial.println(myFT007Checksum, HEX);
 #endif
 
@@ -615,7 +615,7 @@ int SDL_Arduino_WeatherRack2::add(byte bitData)
     if ((dataType == 0x4C))
     {
 #ifdef WR2DEBUG
-      Serial.println("FT0300 found");
+      Serial.println("FT020T found");
 #endif
       FT300MessagesFound++;
 #ifdef WRLOGIC
